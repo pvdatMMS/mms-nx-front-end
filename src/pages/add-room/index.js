@@ -5,7 +5,7 @@ import ButtonGroup from '@material-ui/core/ButtonGroup';
 import axios from 'axios';
 import './styles.css';
 import maker from '../../assets/maker.png'
-import img1 from "../../assets/room1.jpg";
+// import img1 from "../../assets/room1.jpg";
 import Tooltip from "@material-ui/core/Tooltip";
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';

@@ -4,7 +4,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import dummyData from "../pages/home/data";
 
 const Maker = (props) => {
-    const {name, left, top, onDoubleClickCamera,} = props;
+    const {id, name, left, top, onDoubleClickCamera} = props;
     return (
         <Tooltip title={name}>
             <img
@@ -14,7 +14,7 @@ const Maker = (props) => {
                     top: top - 30,
                     height: 30
                 }}
-                onDoubleClick={() => onDoubleClickCamera(props)}
+                onDoubleClick={() => onDoubleClickCamera(id)}
                 src={maker}
                 alt="maker"
             />
