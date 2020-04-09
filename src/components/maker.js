@@ -1,25 +1,24 @@
-import maker from "../assets/maker.png";
-import React, {useState} from "react";
+import React from "react";
 import Tooltip from "@material-ui/core/Tooltip";
-import dummyData from "../pages/home/data";
 
-const Maker = (props) => {
-    const {id, name, left, top, onDoubleClickCamera} = props;
+const Maker = ({ columnWidth, rowHeight, makerIcon, makerData, onClickMaker, onDoubleClickMaker }) => {
+    const { name, axisX, axisY } = makerData;
     return (
         <Tooltip title={name}>
             <img
                 style={{
                     position: "absolute",
-                    left: left - 9.26,
-                    top: top - 30,
+                    left: axisX * columnWidth - 9.26,
+                    top: axisY * rowHeight - 30,
                     height: 30
                 }}
-                onDoubleClick={() => onDoubleClickCamera(id)}
-                src={maker}
+                onDoubleClick={onDoubleClickMaker ? onDoubleClickMaker : () => {}}
+                onClick={onClickMaker ? onClickMaker : () => {}}
+                src={makerIcon}
                 alt="maker"
             />
         </Tooltip>
     )
-
 };
-export default Maker
+
+export default Maker;
