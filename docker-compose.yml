@@ -1,0 +1,21 @@
+version: '3.5'
+
+services:
+
+   nx-web:
+     build:
+       context: .
+       dockerfile: Dockerfile
+     container_name: nx-web
+     working_dir: /code
+     env_file:
+       - .env.docker
+     volumes:
+       - .:/code
+       - ./docker/nginx.conf:/etc/nginx/sites-enabled/default
+       - ./docker/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+       - /code/node_modules
+     ports:
+       - 8090:80
+       - 3090:3000
+       - 9090:9000

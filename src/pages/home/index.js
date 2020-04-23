@@ -12,7 +12,7 @@ export default function Index() {
     const [rowCount, setRowCount] = useState(0);
 
     useEffect(() => {
-        axios.get('http://172.20.10.6:8080/layouts').then(res => {
+        axios.get(`${process.env.REACT_APP_NX_API}/layouts`).then(res => {
             const { data } = res.data
             setcolumnCount(data && data[0] ? data[0].length : 0)
             setRowCount(data && data.length)
@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
     },
     speedDial: {
         position: 'fixed',
-        top: theme.spacing(7),
+        top: theme.spacing(0.5),
         left: theme.spacing(0.5),
         '& .MuiFab-primary': {
             backgroundColor: '#475bff',
@@ -72,5 +72,13 @@ const useStyles = makeStyles(theme => ({
         fontSize: '12px',
         color: 'red',
         display: 'block'
-    }
+    },
+    paper: {
+        width: '100%',
+        height: '100vh'
+    },
+    container: {
+        maxHeight: '90vh',
+        height: '90vh'
+    },
 }))

@@ -1,7 +1,6 @@
 import React, { useState, useLayoutEffect, useEffect } from "react";
 import { Box } from "@material-ui/core";
 import axios from 'axios';
-import socketIOClient from 'socket.io-client';
 import GridCell from "../../components/GridCell";
 import Maker from '../../components/Maker';
 import Drawer from '../../components/Drawer';
@@ -29,16 +28,6 @@ export default function Edit({ classes, data, addActions, onClickAddItem, dataSe
     const [makerSelected, setMakerSelected] = useState(dataSelected);
     const [previousMakerSelected, setPreviousMakerSeleted] = useState(dataSelected);
     const [positionDrawer, setPositionDrawer] = useState(position);
-
-    useEffect(() => {
-        const socket = socketIOClient('http://172.20.10.6:8080')
-        socket.on("UpdateCamera", response => {
-            updateCamera(response)
-        })
-        socket.on("DeleteCamera", response => {
-            deleteCamera(response)
-        })
-    }, []);
 
     useLayoutEffect(() => {
         const updateSize = () => {
@@ -258,10 +247,12 @@ export default function Edit({ classes, data, addActions, onClickAddItem, dataSe
                 axisY: parseInt(makerSelected.axisY) / rowHeight
             }
 
-            axios.post(`http://172.20.10.6:8080/device/${obj.id}/update`, obj).then(res => {
-                alert(res.data.message)
+            axios.post(`${process.env.REACT_APP_NX_API}/device/${obj.id}/update`, obj).then(res => {
+                const { data, message } = res.data
+                updateCamera(data)
+                alert(message)
             }).catch(e => {
-                setError({ ...errors, camera_id: 'This value can not found!' })
+                setError({ ...errors, camera_id: e.response.data.message })
             })
         }
     }
@@ -298,8 +289,10 @@ export default function Edit({ classes, data, addActions, onClickAddItem, dataSe
     }
 
     const handleDelete = () => {
-        axios.delete(`http://172.20.10.6:8080/device/${makerSelected.id}`).then(res => {
-            alert(res.data.message)
+        axios.delete(`${process.env.REACT_APP_NX_API}/device/${makerSelected.id}`).then(res => {
+            const { data, message } = res.data
+            deleteCamera(data)
+            alert(message)
         })
     }
 

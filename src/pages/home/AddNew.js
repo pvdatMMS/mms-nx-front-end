@@ -2,7 +2,6 @@ import React, { useState, useLayoutEffect, useEffect } from "react";
 import { AddLocation, ArrowBack } from '@material-ui/icons';
 import { Box } from "@material-ui/core";
 import axios from 'axios';
-import socketIOClient from 'socket.io-client';
 import GridCell from "../../components/GridCell";
 import Maker from '../../components/Maker';
 import Drawer from '../../components/Drawer';
@@ -41,13 +40,6 @@ export default function AddNew({ classes, data, columnCount, rowCount, onBackToH
         { icon: <AddLocation />, name: 'Add Camera' },
         { icon: <ArrowBack />, name: 'Back To Home' }
     ])
-
-    useEffect(() => {
-        const socket = socketIOClient('http://172.20.10.6:8080')
-        socket.on("AddCamera", response => {
-            addCamera(response)
-        })
-    }, []);
 
     useLayoutEffect(() => {
         const updateSize = () => {
@@ -232,10 +224,12 @@ export default function AddNew({ classes, data, columnCount, rowCount, onBackToH
                 axisY: parseInt(newMaker.axisY) / rowHeight
             }
 
-            axios.post('http://172.20.10.6:8080/device/create', obj).then(res => {
-                alert(res.data.message)
+            axios.post(`${process.env.REACT_APP_NX_API}/device/create`, obj).then(res => {
+                const { data, message } = res.data
+                addCamera(data)
+                alert(message)
             }).catch(e => {
-                setError({ ...errors, camera_id: 'This value can not found!' })
+                setError({ ...errors, camera_id: e.response.data.message })
             })
         }
     }

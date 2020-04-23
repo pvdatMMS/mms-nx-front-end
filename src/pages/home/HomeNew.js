@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from "react";
-import { EditLocation } from '@material-ui/icons';
+import { EditLocation, Person } from '@material-ui/icons';
 import { Box } from "@material-ui/core";
 import axios from 'axios';
 import socketIOClient from 'socket.io-client';
@@ -12,9 +12,19 @@ import Bookmark from '../../components/Bookmark';
 import Layout from "../../components/Layout";
 import Menu from '../../components/Menu';
 import MenuIcon from '@material-ui/icons/Menu';
-import MakerWarningIcon from "../../assets/maker3.png";
+import Maker10Icon from "../../assets/maker10.png";
+import Maker9Icon from "../../assets/maker9.png";
+import Maker8Icon from "../../assets/maker8.png";
+import Maker7Icon from "../../assets/maker7.png";
+import Maker6Icon from "../../assets/maker6.png";
+import Maker5Icon from "../../assets/maker5.png";
+import Maker4Icon from "../../assets/maker4.png";
+import Maker3Icon from "../../assets/maker3.png";
+import Maker2Icon from "../../assets/maker2.png";
+import Maker1Icon from "../../assets/maker1.png";
 import MakerIcon from "../../assets/maker.png";
 import AddNew from './AddNew';
+import PersonPage from '../person/index';
 
 export default function HomeNew({ classes, data, columnCount, rowCount }) {
 
@@ -41,10 +51,11 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
 
     const homeActions = [
         { icon: <EditLocation />, name: 'Edit Camera' },
+        { icon: <Person />, name: 'Blacklist' },
     ];
 
     useEffect(() => {
-        const socket = socketIOClient('http://172.20.10.6:8080')
+        const socket = socketIOClient(`${process.env.REACT_APP_NX_API}`)
         socket.on("UpdateCameraStatus", response => {
             updateCameraStatus(response)
         })
@@ -109,7 +120,7 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
     const onClickMaker = (obj) => {
         const { id } = obj
         setIsLoadingData(true)
-        axios.get(`http://172.20.10.6:8080/device/${id}/bookmarks`).then(res => {
+        axios.get(`${process.env.REACT_APP_NX_API}/device/${id}/bookmarks`).then(res => {
             const { data } = res.data
             const { status_id, bookmarks } = data
             if (isTimeout)
@@ -133,7 +144,7 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
     const onDoubleClickLayout = (obj) => {
         const { id } = obj
         setIsLoadingData(true)
-        axios.get(`http://172.20.10.6:8080/layout/${id}/devices`).then(res => {
+        axios.get(`${process.env.REACT_APP_NX_API}/layout/${id}/devices`).then(res => {
             const { data } = res.data
             setEventClick(2)
             setLayoutSelected(data)
@@ -166,6 +177,7 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
 
     const onClickMenuItem = (name) => {
         if (name === 'Edit Camera') setTab(2)
+        else if (name === "Blacklist") setTab(3)
     }
 
     const onOpenMenu = () => setOpenMenu(true)
@@ -176,14 +188,41 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
         const cellData = homeData[rowIndex][columnIndex]
         const image = cellData && cellData.image ? cellData.image : ''
         return (
-            <GridCell cellKey={key} style={style} image={image} cellData={cellData} renderMaker={() => renderMaker(cellData)} onDoubleClickLayout={() => onDoubleClickLayout(cellData)} />
+            <GridCell cellKey={key} style={style} image={image} cellData={cellData} renderMaker={() => renderMaker(cellData)} onDoubleClickLayout={cellData ? () => onDoubleClickLayout(cellData) : () => {}} />
         )
+    }
+
+    const colorMaker = (color) => {
+        switch(color) {
+            case 1:
+                return Maker1Icon
+            case 2:
+                return Maker2Icon
+            case 3:
+                return Maker3Icon
+            case 4:
+                return Maker4Icon
+            case 5:
+                return Maker5Icon
+            case 6:
+                return Maker6Icon
+            case 7:
+                return Maker7Icon
+            case 8:
+                return Maker8Icon
+            case 9:
+                return Maker9Icon
+            case 10:
+                return Maker10Icon
+            default:
+                return MakerIcon
+        }
     }
 
     const renderMaker = (cellData) => {
         return (
             cellData && cellData.cameras && cellData.cameras.map(obj =>
-                <Maker makerData={obj} makerIcon={obj.status_id === 1 ? MakerIcon : MakerWarningIcon} columnWidth={columnWidth} rowHeight={rowHeight} onClickMaker={() => onClickMaker(obj)} />
+                <Maker makerData={obj} makerIcon={obj.status_id === 1 ? colorMaker(obj.color) : colorMaker(obj.color)} columnWidth={columnWidth} rowHeight={rowHeight} onClickMaker={() => onClickMaker(obj)} />
             )
         )
     }
@@ -221,6 +260,10 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
             case 2:
             return (
                 <AddNew classes={classes} data={homeData} columnCount={columnCount} rowCount={rowCount} onBackToHome={onBackToHome} />
+            )
+            case 3:
+            return (
+                <PersonPage classes={classes} onBackToHome={onBackToHome}></PersonPage>
             )
             default:
                 return (
