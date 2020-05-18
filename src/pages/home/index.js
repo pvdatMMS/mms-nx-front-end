@@ -8,15 +8,17 @@ export default function Index() {
 
     const classes = useStyles();
     const [data, setData] = useState([]);
+    const [trackPaths, setTrackPaths] = useState([]);
     const [columnCount, setcolumnCount] = useState(0);
     const [rowCount, setRowCount] = useState(0);
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_NX_API}/layouts`).then(res => {
-            const { data } = res.data
+            const { data, track_paths } = res.data
             setcolumnCount(data && data[0] ? data[0].length : 0)
             setRowCount(data && data.length)
             setData(data)
+            setTrackPaths(track_paths)
         })
     }, [])
 
@@ -26,9 +28,9 @@ export default function Index() {
         </div>
     )
 
-    if(data && data.length) {
+    if(data && data.length && trackPaths) {
         return (
-            <HomeNew classes={classes} data={data} setData={setData} columnCount={columnCount} rowCount={rowCount} />
+            <HomeNew classes={classes} data={data} setData={setData} columnCount={columnCount} rowCount={rowCount} trackPaths={trackPaths} setTrackPaths={setTrackPaths} />
         )
     } else return loadingSpinner()
     

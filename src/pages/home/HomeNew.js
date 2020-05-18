@@ -26,7 +26,7 @@ import MakerIcon from "../../assets/maker.png";
 import AddNew from './AddNew';
 import PersonPage from '../person/index';
 
-export default function HomeNew({ classes, data, columnCount, rowCount }) {
+export default function HomeNew({ classes, data, trackPaths, setTrackPaths, columnCount, rowCount }) {
 
     const [tab, setTab] = React.useState(1);
     const [openDrawer, setOpenDrawer] = useState(false);
@@ -41,6 +41,7 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
     const [height, setHeight] = useState(0);
     const [widthZoom, setWidthZoom] = useState(0);
     const [heightZoom, setHeightZoom] = useState(0);
+    const [offsetLeft, setOffsetLeft] = useState();
 
     const [homeData, setHomeData] = useState(data);
     const [makerSelected, setMakerSelected] = useState({});
@@ -59,8 +60,11 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
         socket.on("UpdateCameraStatus", response => {
             updateCameraStatus(response)
         })
+        socket.on("UpdateTrackPath", response => {
+            setTrackPaths(response)
+        })
     }, []);
-
+    
     useLayoutEffect(() => {
         const updateSize = () => {
             if (window.innerWidth < window.outerWidth) {
@@ -114,7 +118,7 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
         })
         setHomeData(data)
     }
-
+    
     const onCloseDrawer = () => setOpenDrawer(false)
 
     const onClickMaker = (obj) => {
@@ -188,12 +192,13 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
         const cellData = homeData[rowIndex][columnIndex]
         const image = cellData && cellData.image ? cellData.image : ''
         return (
-            <GridCell cellKey={key} style={style} image={image} cellData={cellData} renderMaker={() => renderMaker(cellData)} onDoubleClickLayout={cellData ? () => onDoubleClickLayout(cellData) : () => {}} />
+            <GridCell cellKey={key} style={style} image={image} cellData={cellData} onDoubleClickLayout={cellData ? () => onDoubleClickLayout(cellData) : () => { }} />
         )
     }
-
+     console.log(homeData)
+     console.log(trackPaths)
     const colorMaker = (color) => {
-        switch(color) {
+        switch (color) {
             case 1:
                 return Maker1Icon
             case 2:
@@ -219,14 +224,38 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
         }
     }
 
-    const renderMaker = (cellData) => {
+    const renderCanvas = () => {
         return (
-            cellData && cellData.cameras && cellData.cameras.map(obj =>
-                <Maker makerData={obj} makerIcon={obj.status_id === 1 ? colorMaker(obj.color) : colorMaker(obj.color)} columnWidth={columnWidth} rowHeight={rowHeight} onClickMaker={() => onClickMaker(obj)} />
-            )
+            <>
+            <canvas
+                style={{ position: "absolute" }}
+                id="DrawLine"
+                width={widthZoom}
+                height={heightZoom}
+                ref={e => e && e.offsetLeft && setOffsetLeft(e.offsetLeft)}
+            />
+            {
+                    homeData.map((arr, arrIndex) =>
+                        arr.map((obj, objIndex) => 
+                            obj.cameras.map(camera => {
+                                if (offsetLeft) {
+                                    const w = columnWidth * objIndex + columnWidth + offsetLeft
+                                    const h = rowHeight * arrIndex + 50 + rowHeight
+
+                                    const { axisX, axisY } = camera
+                                    let temp = { ...camera }
+                                    if (columnWidth && rowHeight) {
+                                        temp.axisX = (axisX * columnWidth + columnWidth * objIndex + offsetLeft) / w
+                                        temp.axisY = (axisY * rowHeight + rowHeight * arrIndex + 50) / h
+                                    }
+                                    return <Maker makerData={temp} makerIcon={temp.status_id === 1 ? colorMaker(temp.color) : colorMaker(temp.color)} columnWidth={w} rowHeight={h} onClickMaker={() => onClickMaker(temp)} />
+                                }
+                            })
+                        ))
+                }
+            </>
         )
     }
-
     const renderDrawerOneClickComponent = () => {
         return (
             <>
@@ -258,17 +287,17 @@ export default function HomeNew({ classes, data, columnCount, rowCount }) {
     const renderComponent = () => {
         switch (tab) {
             case 2:
-            return (
-                <AddNew classes={classes} data={homeData} columnCount={columnCount} rowCount={rowCount} onBackToHome={onBackToHome} />
-            )
+                return (
+                    <AddNew classes={classes} data={homeData} columnCount={columnCount} rowCount={rowCount} onBackToHome={onBackToHome} />
+                )
             case 3:
-            return (
-                <PersonPage classes={classes} onBackToHome={onBackToHome}></PersonPage>
-            )
+                return (
+                    <PersonPage classes={classes} onBackToHome={onBackToHome}></PersonPage>
+                )
             default:
                 return (
                     <>
-                        <Layout width={width} height={height} columnCount={columnCount} columnWidth={columnWidth} rowCount={rowCount} rowHeight={rowHeight} widthZoom={widthZoom} heightZoom={heightZoom} cellRenderer={cellRenderer} />
+                        <Layout width={width} height={height} data={homeData} trackPaths={trackPaths} columnCount={columnCount} columnWidth={columnWidth} rowCount={rowCount} rowHeight={rowHeight} widthZoom={widthZoom} heightZoom={heightZoom} cellRenderer={cellRenderer} renderCanvas={renderCanvas} />
                         <Menu classes={classes} actions={homeActions} open={openMenu} onOpen={onOpenMenu} onClose={onCloseMenu} onClickMenuItem={onClickMenuItem} icon={<MenuIcon />} />
                         <Drawer height={height} openDrawer={openDrawer} onCloseDrawer={onCloseDrawer} positionDrawer="right" renderDrawerComponent={renderDrawerComponent} />
                     </>

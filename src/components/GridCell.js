@@ -15,7 +15,7 @@ const GridCell = ({ cellKey, style, cellData, image, renderMaker, onClickLayout,
             onMouseMove={onMouseMove ? onMouseMove : () => {}}
         >
             {
-                renderMaker()
+                renderMaker ? renderMaker() : <></>
             }
         </div>
     )
